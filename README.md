@@ -1,6 +1,6 @@
 # DPCM_Bitcrusher
 
-![screenshot.png]
+!(screenshot.png)
 
 A JUCE-based **VST3 / Standalone plugin** that replicates the classic **DPCM (Differential Pulse-Code Modulation)** bitcrushing effect heard on the NES 2A03 sound chip.
 

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <juce_dsp/juce_dsp.h>
+
 
 class DPCMBitcrusherAudioProcessor : public juce::AudioProcessor
 {
@@ -33,6 +35,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     juce::AudioProcessorValueTreeState apvts;
+    juce::dsp::DryWetMixer<float> dryWet;
 
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

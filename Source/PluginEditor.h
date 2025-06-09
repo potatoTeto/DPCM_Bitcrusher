@@ -27,10 +27,14 @@ private:
 
     juce::ToggleButton _bypassToggle;
 
+    juce::Slider _mixSlider;
+    juce::Label _mixLabel;
+
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _inputGainAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _outputGainAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _qualityAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> _bypassAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _mixAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DPCMBitcrusherAudioProcessorEditor)
 };

@@ -1,11 +1,12 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include <juce_dsp/juce_dsp.h>
 
 DPCMBitcrusherAudioProcessor::DPCMBitcrusherAudioProcessor()
-    : AudioProcessor(BusesProperties()
-                        .withInput("Input", juce::AudioChannelSet::stereo(), true)
-                        .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
-      apvts(*this, nullptr, "PARAMETERS", createParameterLayout())
+    : AudioProcessor (BusesProperties()
+        .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
+      apvts(*this, nullptr, "Parameters", createParameterLayout())
 {
 }
 
@@ -24,7 +25,18 @@ void DPCMBitcrusherAudioProcessor::setCurrentProgram(int) {}
 const juce::String DPCMBitcrusherAudioProcessor::getProgramName(int) { return {}; }
 void DPCMBitcrusherAudioProcessor::changeProgramName(int, const juce::String&) {}
 
-void DPCMBitcrusherAudioProcessor::prepareToPlay(double, int) {}
+void DPCMBitcrusherAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+{
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
+    spec.numChannels = static_cast<juce::uint32>(getTotalNumOutputChannels());
+
+    dryWet.setWetMixProportion(1.0f);  // Start fully wet
+    dryWet.prepare(spec);
+}
+
+
 void DPCMBitcrusherAudioProcessor::releaseResources() {}
 
 void DPCMBitcrusherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
@@ -35,14 +47,19 @@ void DPCMBitcrusherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer
 
     float inputGain = apvts.getRawParameterValue("inputGain")->load();
     float outputGain = apvts.getRawParameterValue("gain")->load();
+    float mix = apvts.getRawParameterValue("mix")->load();  // 0 = dry, 1 = wet
     int quality = static_cast<int>(apvts.getRawParameterValue("quality")->load());
 
-    const int maxDeltaSteps = 64;  // NES DPCM delta steps
-    const float stepSize = 1.0f / (float)maxDeltaSteps;
+    const int maxDeltaSteps = 64;
+    const float stepSize = 1.0f / static_cast<float>(maxDeltaSteps);
     const int stepInterval = 1 << (15 - quality);
+    const float deadZone = stepSize * 0.5f;
 
-    const float deadZone = stepSize * 0.5f;  // Half-step dead zone
+    // --- Store dry signal ---
+    juce::AudioBuffer<float> dryBuffer;
+    dryBuffer.makeCopyOf(buffer);
 
+    // --- Apply effect (wet) ---
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
         auto* data = buffer.getWritePointer(channel);
@@ -57,26 +74,33 @@ void DPCMBitcrusherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer
             {
                 float delta = sample - accumulator;
 
-                // Only update accumulator if delta is larger than deadZone
                 if (std::abs(delta) >= deadZone)
                 {
                     float step = (delta >= 0.0f) ? stepSize : -stepSize;
                     accumulator += step;
-
-                    // Clamp accumulator between -1 and 1
                     accumulator = juce::jlimit(-1.0f, 1.0f, accumulator);
                 }
-                // else accumulator stays the same, avoiding jitter
 
                 data[i] = accumulator * outputGain;
             }
             else
             {
-                // Hold previous accumulator value during skipped samples
                 data[i] = accumulator * outputGain;
             }
 
             sampleIndex = (sampleIndex + 1) % stepInterval;
+        }
+    }
+
+    // --- Blend dry and wet using mix ---
+    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+    {
+        auto* wet = buffer.getWritePointer(channel);
+        auto* dry = dryBuffer.getReadPointer(channel);
+
+        for (int i = 0; i < buffer.getNumSamples(); ++i)
+        {
+            wet[i] = dry[i] * (1.0f - mix) + wet[i] * mix;
         }
     }
 }
@@ -113,6 +137,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout DPCMBitcrusherAudioProcessor
     params.push_back(std::make_unique<juce::AudioParameterFloat>("gain", "Output Gain", 0.0f, 2.0f, 1.0f));
     params.push_back(std::make_unique<juce::AudioParameterInt>("quality", "Quality", 0, 15, 15));
     params.push_back(std::make_unique<juce::AudioParameterBool>("bypass", "Bypass", false));
+    params.push_back (std::make_unique<juce::AudioParameterFloat>(
+        "mix", "Mix",
+        juce::NormalisableRange<float>(0.0f, 1.0f),
+        1.0f  // default = fully wet
+    ));
 
     return { params.begin(), params.end() };
 }

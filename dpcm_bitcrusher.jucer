@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="P7AWhZ" name="dpcm_bitcrusher" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginChannelConfigs="{1,1}">
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginChannelConfigs="{1,1}"
+              companyName="potatoTeto" companyCopyright="potatoTeto" companyWebsite="https://www.potatoteto.com/"
+              companyEmail="hello@potatoteto.com">
   <MAINGROUP id="KHrbwo" name="dpcm_bitcrusher">
     <GROUP id="{7789448F-2402-845E-CED0-7CC56BD7C802}" name="Source">
       <FILE id="jgy3Bq" name="PluginProcessor.cpp" compile="1" resource="0"

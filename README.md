@@ -23,7 +23,7 @@ This VST uses a similar algorithm to **FamiTracker** to emulate the NES DPCM cha
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/your-username/DPCM_Bitcrusher.git
+    git clone https://github.com/potatoTeto/DPCM_Bitcrusher.git
     cd DPCM_Bitcrusher
     ```
 

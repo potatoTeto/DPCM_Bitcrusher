@@ -48,11 +48,11 @@ void DPCMBitcrusherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer
     float inputGain = apvts.getRawParameterValue("inputGain")->load();
     float outputGain = apvts.getRawParameterValue("gain")->load();
     float mix = apvts.getRawParameterValue("mix")->load();  // 0 = dry, 1 = wet
-    int quality = static_cast<int>(apvts.getRawParameterValue("quality")->load());
+    int sampleUpdateRate = static_cast<int>(apvts.getRawParameterValue("sampleUpdateRate")->load());
 
     const int maxDeltaSteps = 64;
     const float stepSize = 1.0f / static_cast<float>(maxDeltaSteps);
-    const int stepInterval = 1 << (15 - quality);
+    const int stepInterval = 1 << (15 - sampleUpdateRate);
     const float deadZone = stepSize * 0.5f;
 
     // --- Store dry signal ---
@@ -135,7 +135,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout DPCMBitcrusherAudioProcessor
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>("inputGain", "Input Gain", 0.0f, 2.0f, 1.0f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("gain", "Output Gain", 0.0f, 2.0f, 1.0f));
-    params.push_back(std::make_unique<juce::AudioParameterInt>("quality", "Quality", 0, 15, 15));
+    params.push_back(std::make_unique<juce::AudioParameterInt>("sampleUpdateRate", "Sample Update Rate", 0, 15, 15));
     params.push_back(std::make_unique<juce::AudioParameterBool>("bypass", "Bypass", false));
     params.push_back (std::make_unique<juce::AudioParameterFloat>(
         "mix", "Mix",

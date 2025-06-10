@@ -7,8 +7,8 @@ DPCMBitcrusherAudioProcessorEditor::DPCMBitcrusherAudioProcessorEditor(DPCMBitcr
         apvts, "inputGain", _inputGainSlider);
     _outputGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         apvts, "gain", _outputGainSlider);
-    _qualityAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-        apvts, "quality", _qualityComboBox);
+    _sampleUpdateRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        apvts, "sampleUpdateRate", _sampleUpdateRateSlider);
     _bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         apvts, "bypass", _bypassToggle);
 
@@ -26,20 +26,28 @@ DPCMBitcrusherAudioProcessorEditor::DPCMBitcrusherAudioProcessorEditor(DPCMBitcr
     _mixLabel.setText("Mix Level", juce::dontSendNotification);
     addAndMakeVisible(_mixLabel);
 
-    // Add ComboBox IDs 0..15 to exactly match quality parameter values
-    for (int i = 0; i <= 15; ++i)
-        _qualityComboBox.addItem("Quality " + juce::String(i), i + 1);
+    // Add sampleUpdateRate slider that snaps to integers
+    _sampleUpdateRateSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    _sampleUpdateRateSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    _sampleUpdateRateSlider.setRange(0, 15, 1); // Snap to integers
+    _sampleUpdateRateSlider.setValue(15); // Default value
+    _sampleUpdateRateSlider.setNumDecimalPlacesToDisplay(0);
 
-    // Create attachment (syncs ComboBox with parameter)
-    _qualityAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-        apvts, "quality", _qualityComboBox);
-    
-    // Force ComboBox refresh (optional but can fix display issues)
-    _qualityComboBox.setSelectedId(_qualityComboBox.getSelectedId(), juce::dontSendNotification);
+    addAndMakeVisible(_sampleUpdateRateSlider);
+    _sampleUpdateRateLabel.setText("Sample/Delta Update Rate", juce::dontSendNotification);
+    addAndMakeVisible(_sampleUpdateRateLabel);
 
-    addAndMakeVisible(_qualityComboBox);
-    _qualityLabel.setText("Quality", juce::dontSendNotification);
-    addAndMakeVisible(_qualityLabel);
+    _sampleUpdateRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        apvts, "sampleUpdateRate", _sampleUpdateRateSlider);
+
+    // Dynamically update the label with stepInterval
+    _sampleUpdateRateSlider.onValueChange = [this]()
+    {
+        int q = static_cast<int>(_sampleUpdateRateSlider.getValue());
+        int stepInterval = 1 << (15 - q);
+        _sampleUpdateRateLabel.setText("Sample/Delta Update Rate: Every " + juce::String(stepInterval) + " samples)", juce::dontSendNotification);
+    };
+    _sampleUpdateRateSlider.onValueChange(); // Trigger once to initialize
 
     addAndMakeVisible(_bypassToggle);
     _bypassToggle.setButtonText("Bypass");
@@ -54,7 +62,7 @@ void DPCMBitcrusherAudioProcessorEditor::paint(juce::Graphics& g)
     g.fillAll(juce::Colours::black);
     g.setColour(juce::Colours::white);
     g.setFont(15.0f);
-    g.drawFittedText("NES DPCM Bitcrusher v1.1 by potatoTeto", getLocalBounds(), juce::Justification::centredTop, 1);
+    g.drawFittedText("NES DPCM Bitcrusher v1.2 by potatoTeto", getLocalBounds(), juce::Justification::centredTop, 1);
 }
 
 void DPCMBitcrusherAudioProcessorEditor::resized()
@@ -70,9 +78,11 @@ void DPCMBitcrusherAudioProcessorEditor::resized()
 
     _outputGainLabel.setBounds(area.removeFromTop(20));
     _outputGainSlider.setBounds(area.removeFromTop(rowHeight));
-
-    _qualityLabel.setBounds(area.removeFromTop(20));
-    _qualityComboBox.setBounds(area.removeFromTop(rowHeight));
+    
+    area.removeFromTop(20);
+    
+    _sampleUpdateRateLabel.setBounds(area.removeFromTop(20));
+    _sampleUpdateRateSlider.setBounds(area.removeFromTop(rowHeight));
 
     area.removeFromTop(spacing);
     _mixLabel.setBounds(area.removeFromTop(20));

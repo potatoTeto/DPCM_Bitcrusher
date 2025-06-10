@@ -22,8 +22,8 @@ private:
     juce::Slider _outputGainSlider;
     juce::Label _outputGainLabel;
 
-    juce::ComboBox _qualityComboBox;
-    juce::Label _qualityLabel;
+    juce::Slider _sampleUpdateRateSlider;
+    juce::Label _sampleUpdateRateLabel;
 
     juce::ToggleButton _bypassToggle;
 
@@ -32,7 +32,7 @@ private:
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _inputGainAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _outputGainAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> _qualityAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _sampleUpdateRateAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> _bypassAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> _mixAttachment;
 

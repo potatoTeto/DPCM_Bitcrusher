@@ -29,13 +29,15 @@ This VST uses a similar algorithm to **FamiTracker** to emulate the NES DPCM cha
 
 2. Ensure **Visual Studio 2022** (or compatible version) is installed and added to your system PATH.
 
-3. Run the build and packaging script in PowerShell, passing the version tag as an argument:
+3. Open ``dpcm_bitcrusher.jucer`` in ``JUCE/Projucer.exe`` and then hit File>Save. This should generate an entire ``/Build/`` directory from within this project's root directory.
+
+4. Run the ``build-and-package.ps1`` Powershell script, passing the version tag as an argument:
     ```powershell
     ./build-and-package.ps1 v1.0.0
     ```
     Replace `v1.0.0` with your desired version string.
 
-4. The compiled binaries and packaged archives will be created in the `publish` folder.
+5. The compiled binaries will end up in packaged ``.7z`` archives from within the `publish` folder.
 
 ---
 

@@ -1,6 +1,6 @@
 # DPCM_Bitcrusher
 
-![screenshot](screenshot.png)
+[![screenshot](screenshot.png)](https://github.com/potatoTeto/DPCM_Bitcrusher/releases)
 
 ## Download Link
 https://github.com/potatoTeto/DPCM_Bitcrusher/releases
